@@ -2,7 +2,6 @@ import logging
 import os
 
 from google import genai
-from google.genai import types
 
 from models import JobAnalysis
 from web_content import UrlFetchError, fetch_job_description, looks_like_url
@@ -83,19 +82,17 @@ def analyze_content(user_content: str) -> JobAnalysis:
 
     try:
         client = genai.Client(api_key=api_key)
-        response = client.models.generate_content(
+        interaction = client.interactions.create(
             model=model_name,
-            contents=prompt,
-            config=types.GenerateContentConfig(
-                response_mime_type="application/json",
-                response_schema=JobAnalysis,
-                temperature=0.2,
-            ),
+            input=prompt,
+            response_format={
+                "type": "text",
+                "mime_type": "application/json",
+                "schema": JobAnalysis.model_json_schema(),
+            },
         )
-        if isinstance(response.parsed, JobAnalysis):
-            return _clean_analysis(response.parsed)
-        if response.text:
-            return _clean_analysis(JobAnalysis.model_validate_json(response.text))
+        if interaction.output_text:
+            return _clean_analysis(JobAnalysis.model_validate_json(interaction.output_text))
     except Exception as error:
         # Keep user data and credentials out of logs while retaining the provider error for diagnosis.
         logger.exception("Gemini analysis request failed (%s).", type(error).__name__)
