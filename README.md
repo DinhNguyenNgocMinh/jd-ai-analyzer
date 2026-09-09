@@ -80,7 +80,7 @@ Requirements: Python 3.11+ and a Gemini API key from Google AI Studio.
    | Key | Value |
    | --- | --- |
    | `GEMINI_API_KEY` | Your real Gemini key |
-   | `GEMINI_MODEL` | `gemini-2.5-flash` |
+   | `GEMINI_MODEL` | `gemini-3.6-flash` |
    | `FRONTEND_ORIGINS` | Your GitHub Pages origin, such as `https://YOUR-USERNAME.github.io` |
 
 5. Deploy and visit `https://YOUR-RENDER-URL/health`. It should return `{"status":"ok"}`.

@@ -75,7 +75,7 @@ def analyze_content(user_content: str) -> JobAnalysis:
     if not api_key:
         raise AnalysisError("The analysis service is not configured yet. Please add the Gemini API key and try again.")
 
-    model_name = os.getenv("GEMINI_MODEL", "gemini-2.5-flash")
+    model_name = os.getenv("GEMINI_MODEL", "gemini-3.6-flash")
     prompt = (
         f"{ANALYSIS_INSTRUCTIONS}\n\nSource type: {source_label}\n\n"
         f"--- SOURCE START ---\n{source_text}\n--- SOURCE END ---"
