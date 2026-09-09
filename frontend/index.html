@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta
       name="description"
-      content="Analyze a job description to identify relevant tools, concepts, and role details."
+      content="Analyze a job description to identify the role, responsibilities, requirements, and technology landscape."
     />
     <link rel="icon" href="data:," />
     <title>JD-AI-ANALYZER</title>
@@ -42,10 +42,10 @@
         <section class="view input-view" id="inputView" aria-labelledby="inputTitle">
           <div class="intro">
             <p class="eyebrow">Job description intelligence</p>
-            <h1 id="inputTitle">Turn a job description into a focused skill map.</h1>
+            <h1 id="inputTitle">Turn a job description into a clear decision dashboard.</h1>
             <p class="intro-copy">
-              Paste a job-description URL or the full text. We’ll identify the role,
-              tools, concepts, and what deserves the most attention.
+              Paste a job-description URL or the full text. We’ll surface the role, core
+              responsibilities, requirements, and technology landscape without burying you in the source text.
             </p>
           </div>
 
@@ -74,60 +74,103 @@
         <section class="view dashboard-view" id="dashboardView" aria-labelledby="dashboardTitle" hidden>
           <div class="dashboard-heading">
             <div>
-              <p class="eyebrow">Analysis complete</p>
+              <p class="eyebrow">Job intelligence</p>
               <h1 id="dashboardTitle">Role overview</h1>
             </div>
-            <button class="secondary-button" id="newAnalysisButton" type="button">
-              Analyze another
-            </button>
+            <button class="secondary-button" id="newAnalysisButton" type="button">Analyze another</button>
           </div>
 
-          <article class="role-card">
-            <div>
-              <p class="card-kicker">Job title</p>
+          <article class="role-card" aria-labelledby="jobTitle">
+            <div class="role-card__content">
+              <p class="card-kicker">Role identity</p>
               <h2 id="jobTitle">Data Engineer</h2>
               <p id="roleSummary">Build and maintain reliable data products that support business decisions.</p>
             </div>
-            <div class="role-meta" id="roleMeta"></div>
+            <div class="role-meta" id="roleMeta" aria-label="Role details"></div>
           </article>
 
-          <div class="dashboard-grid">
-            <article class="dashboard-card tools-card">
-              <div class="card-heading">
-                <div>
-                  <p class="card-kicker">Most relevant</p>
-                  <h2>Tools &amp; technologies</h2>
-                </div>
-                <span class="relative-label">Relative importance</span>
+          <section class="dashboard-section at-a-glance" id="glanceSection" aria-labelledby="glanceTitle">
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Executive summary</p>
+                <h2 id="glanceTitle">Job at a glance</h2>
               </div>
-              <div class="tools-list" id="toolsList"></div>
-              <p class="card-footnote">Importance reflects emphasis in this description, not a market-wide score.</p>
-            </article>
+              <p class="section-description">The strongest signals identified in this job description.</p>
+            </div>
+            <div class="glance-grid" id="glanceGrid"></div>
+          </section>
 
-            <article class="dashboard-card concepts-card">
-              <div class="card-heading">
-                <div>
-                  <p class="card-kicker">Knowledge areas</p>
-                  <h2>Core concepts</h2>
-                </div>
+          <section class="dashboard-section" id="responsibilitiesSection" aria-labelledby="responsibilitiesTitle" hidden>
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">What this role owns</p>
+                <h2 id="responsibilitiesTitle">Core responsibilities</h2>
               </div>
-              <div class="concept-list" id="conceptList"></div>
-            </article>
+              <span class="section-count" id="responsibilitiesCount"></span>
+            </div>
+            <div class="responsibility-grid" id="responsibilityGrid"></div>
+          </section>
 
-            <article class="dashboard-card details-card">
-              <div class="card-heading">
-                <div>
-                  <p class="card-kicker">Useful signals</p>
-                  <h2>Role details</h2>
-                </div>
+          <section class="dashboard-section technology-section" id="technologySection" aria-labelledby="technologyTitle">
+            <div class="section-heading technology-heading">
+              <div>
+                <p class="section-kicker">Skills &amp; technology landscape</p>
+                <h2 id="technologyTitle">Identified technologies</h2>
               </div>
-              <dl class="details-list" id="detailsList"></dl>
-            </article>
-          </div>
+              <div class="technology-summary" id="technologySummary"></div>
+            </div>
+            <div class="technology-groups" id="technologyGroups"></div>
+            <p class="empty-state" id="technologyEmpty" hidden>No technologies were explicitly identified in this job description.</p>
+            <p class="section-note">Technology diversity reflects the breadth of named technologies and technology groups in this description. It does not indicate proficiency.</p>
+          </section>
+
+          <section class="dashboard-section" id="competenciesSection" aria-labelledby="competenciesTitle" hidden>
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Capability areas</p>
+                <h2 id="competenciesTitle">Skills &amp; competencies</h2>
+              </div>
+              <span class="section-count" id="competenciesCount"></span>
+            </div>
+            <div class="competency-list" id="competencyList"></div>
+          </section>
+
+          <section class="dashboard-section split-section" id="requirementsSection" aria-labelledby="requirementsTitle" hidden>
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Explicit role signals</p>
+                <h2 id="requirementsTitle">Requirements &amp; experience</h2>
+              </div>
+            </div>
+            <dl class="signal-grid" id="requirementsGrid"></dl>
+          </section>
+
+          <section class="dashboard-section" id="leadershipSection" aria-labelledby="leadershipTitle" hidden>
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Supported by the description</p>
+                <h2 id="leadershipTitle">Leadership &amp; management</h2>
+              </div>
+            </div>
+            <div class="leadership-list" id="leadershipList"></div>
+          </section>
+
+          <section class="dashboard-section original-section" id="originalSection" aria-labelledby="originalTitle" hidden>
+            <div class="section-heading">
+              <div>
+                <p class="section-kicker">Source reference</p>
+                <h2 id="originalTitle">Original job description</h2>
+              </div>
+            </div>
+            <details class="original-jd" id="originalDetails">
+              <summary>Open submitted job description</summary>
+              <div class="original-jd__content" id="originalContent"></div>
+            </details>
+          </section>
         </section>
       </main>
     </div>
     <script src="js/config.js?v=20260909-1"></script>
-    <script src="js/app.js"></script>
+    <script src="js/app.js?v=20260909-4"></script>
   </body>
 </html>
