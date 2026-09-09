@@ -16,7 +16,7 @@ const mockAnalysis = {
   key_responsibilities: ["Build scalable data pipelines", "Maintain trustworthy datasets", "Collaborate with analytics and product teams"]
 };
 
-const API_BASE_URL = window.APP_CONFIG?.API_BASE_URL?.replace(/\/$/, "") || "http://localhost:8001";
+const API_BASE_URL = window.APP_CONFIG?.API_BASE_URL?.replace(/\/$/, "") || "http://127.0.0.1:8001";
 const appShell = document.querySelector(".app-shell");
 const sidePanel = document.getElementById("sidePanel");
 const menuButton = document.getElementById("menuButton");

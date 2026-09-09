@@ -91,7 +91,7 @@ Free Render instances can take a short time to wake up after inactivity.
 
 1. In `frontend/js/config.js`, set `API_BASE_URL` to your Render URL, such as `https://jd-ai-analyzer.onrender.com`. Do not add secrets to this file.
 2. Push the change to GitHub.
-3. In GitHub: **Settings → Pages → Build and deployment**, select **Deploy from a branch**, choose `main`, then choose the `/frontend` folder.
+3. In GitHub: **Settings → Pages → Build and deployment**, select **Deploy from a branch**, choose `main`, then choose the `/(root)` folder. GitHub Pages supports only the repository root or `/docs`; the root page automatically opens the app in `/frontend/`.
 4. Copy the resulting Pages origin (for example `https://YOUR-USERNAME.github.io`) into Render's `FRONTEND_ORIGINS` variable and redeploy the backend.
 
 ## Security notes
