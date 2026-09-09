@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Analyze a job description to identify relevant tools, concepts, and role details."
+    />
+    <title>JD-AI-ANALYZER</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="side-panel" id="sidePanel" aria-label="Future workspace panel">
+        <div class="side-panel__top">
+          <span class="panel-mark" aria-hidden="true"></span>
+          <span class="panel-label">Workspace</span>
+        </div>
+        <div class="side-panel__empty" aria-hidden="true"></div>
+      </aside>
+
+      <main class="main-content">
+        <header class="topbar">
+          <button
+            class="menu-button"
+            id="menuButton"
+            type="button"
+            aria-label="Collapse workspace panel"
+            aria-controls="sidePanel"
+            aria-expanded="true"
+          >
+            <span></span><span></span><span></span>
+          </button>
+          <a class="wordmark" href="#" id="homeLink" aria-label="JD-AI-ANALYZER home">
+            JD<span>-AI-</span>ANALYZER
+          </a>
+          <div class="topbar-spacer" aria-hidden="true"></div>
+        </header>
+
+        <section class="view input-view" id="inputView" aria-labelledby="inputTitle">
+          <div class="intro">
+            <p class="eyebrow">Job description intelligence</p>
+            <h1 id="inputTitle">Turn a job description into a focused skill map.</h1>
+            <p class="intro-copy">
+              Paste a job-description URL or the full text. We’ll identify the role,
+              tools, concepts, and what deserves the most attention.
+            </p>
+          </div>
+
+          <form class="analysis-form" id="analysisForm" novalidate>
+            <label for="jobDescription">Job description URL or text</label>
+            <textarea
+              id="jobDescription"
+              name="jobDescription"
+              rows="10"
+              placeholder="https://company.com/careers/data-engineer&#10;&#10;or paste the complete job description here..."
+              aria-describedby="inputHint formMessage"
+            ></textarea>
+            <div class="form-footer">
+              <p id="inputHint">Use a public URL or paste the complete listing for the most useful result.</p>
+              <button class="primary-button" id="analyzeButton" type="submit">
+                <span>Analyze description</span>
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h13M13 6l6 6-6 6" /></svg>
+              </button>
+            </div>
+            <p class="form-message" id="formMessage" role="status" aria-live="polite"></p>
+          </form>
+
+          <p class="privacy-note">Your API key stays on the secure backend — never in this page.</p>
+        </section>
+
+        <section class="view dashboard-view" id="dashboardView" aria-labelledby="dashboardTitle" hidden>
+          <div class="dashboard-heading">
+            <div>
+              <p class="eyebrow">Analysis complete</p>
+              <h1 id="dashboardTitle">Role overview</h1>
+            </div>
+            <button class="secondary-button" id="newAnalysisButton" type="button">
+              Analyze another
+            </button>
+          </div>
+
+          <article class="role-card">
+            <div>
+              <p class="card-kicker">Job title</p>
+              <h2 id="jobTitle">Data Engineer</h2>
+              <p id="roleSummary">Build and maintain reliable data products that support business decisions.</p>
+            </div>
+            <div class="role-meta" id="roleMeta"></div>
+          </article>
+
+          <div class="dashboard-grid">
+            <article class="dashboard-card tools-card">
+              <div class="card-heading">
+                <div>
+                  <p class="card-kicker">Most relevant</p>
+                  <h2>Tools &amp; technologies</h2>
+                </div>
+                <span class="relative-label">Relative importance</span>
+              </div>
+              <div class="tools-list" id="toolsList"></div>
+              <p class="card-footnote">Importance reflects emphasis in this description, not a market-wide score.</p>
+            </article>
+
+            <article class="dashboard-card concepts-card">
+              <div class="card-heading">
+                <div>
+                  <p class="card-kicker">Knowledge areas</p>
+                  <h2>Core concepts</h2>
+                </div>
+              </div>
+              <div class="concept-list" id="conceptList"></div>
+            </article>
+
+            <article class="dashboard-card details-card">
+              <div class="card-heading">
+                <div>
+                  <p class="card-kicker">Useful signals</p>
+                  <h2>Role details</h2>
+                </div>
+              </div>
+              <dl class="details-list" id="detailsList"></dl>
+            </article>
+          </div>
+        </section>
+      </main>
+    </div>
+    <script src="js/config.js"></script>
+    <script src="js/app.js"></script>
+  </body>
+</html>
