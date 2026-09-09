@@ -41,6 +41,46 @@ If it is a job description:
 Return only data matching the requested JSON schema.
 """.strip()
 
+# Gemini accepts a subset of JSON Schema. This explicit schema avoids Pydantic's
+# ``additionalProperties`` field, which the Gemini API rejects for structured output.
+ANALYSIS_RESPONSE_SCHEMA = {
+    "type": "object",
+    "properties": {
+        "is_job_description": {"type": "boolean"},
+        "job_title": {"type": "string"},
+        "summary": {"type": "string"},
+        "tools": {
+            "type": "array",
+            "items": {
+                "type": "object",
+                "properties": {
+                    "name": {"type": "string"},
+                    "importance": {"type": "integer", "minimum": 1, "maximum": 100},
+                },
+                "required": ["name", "importance"],
+            },
+        },
+        "concepts": {"type": "array", "items": {"type": "string"}},
+        "experience_level": {"type": ["string", "null"]},
+        "employment_type": {"type": ["string", "null"]},
+        "work_arrangement": {"type": ["string", "null"]},
+        "key_responsibilities": {"type": "array", "items": {"type": "string"}},
+        "reason_not_job_description": {"type": ["string", "null"]},
+    },
+    "required": [
+        "is_job_description",
+        "job_title",
+        "summary",
+        "tools",
+        "concepts",
+        "experience_level",
+        "employment_type",
+        "work_arrangement",
+        "key_responsibilities",
+        "reason_not_job_description",
+    ],
+}
+
 
 def _clean_analysis(analysis: JobAnalysis) -> JobAnalysis:
     """Apply small guardrails to otherwise schema-valid model output."""
@@ -108,7 +148,7 @@ def analyze_content(user_content: str) -> JobAnalysis:
             config=types.GenerateContentConfig(
                 system_instruction=ANALYSIS_INSTRUCTIONS,
                 response_mime_type="application/json",
-                response_schema=JobAnalysis,
+                response_json_schema=ANALYSIS_RESPONSE_SCHEMA,
                 max_output_tokens=2_048,
             ),
         )
