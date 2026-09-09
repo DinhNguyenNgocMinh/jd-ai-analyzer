@@ -34,6 +34,11 @@ def health_check() -> dict[str, str]:
     return {"status": "ok"}
 
 
+@app.get("/")
+def service_home() -> dict[str, str]:
+    return {"status": "ok", "service": "JD-AI-ANALYZER API"}
+
+
 @app.post("/api/analyze", response_model=JobAnalysis)
 async def analyze_job_description(payload: AnalyzeRequest) -> JobAnalysis:
     try:
