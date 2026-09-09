@@ -1,18 +1,24 @@
 from typing import Optional
 
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class AnalyzeRequest(BaseModel):
     content: str = Field(
         min_length=10,
-        max_length=50_000,
+        max_length=30_000,
         description="A public job-description URL or pasted job-description text.",
     )
 
 
 class Tool(BaseModel):
-    name: str = Field(description="A concrete tool, platform, language, or technology.")
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
+    name: str = Field(
+        min_length=1,
+        max_length=100,
+        description="A concrete tool, platform, language, or technology.",
+    )
     importance: int = Field(
         ge=1,
         le=100,
@@ -21,13 +27,16 @@ class Tool(BaseModel):
 
 
 class JobAnalysis(BaseModel):
+    model_config = ConfigDict(extra="forbid", str_strip_whitespace=True)
+
     is_job_description: bool = Field(
         description="Whether the source appears to describe a specific role or position."
     )
     job_title: str = Field(
+        max_length=200,
         description="The title stated or strongly supported by the job description."
     )
-    summary: str = Field(description="One concise sentence summarizing the role.")
+    summary: str = Field(max_length=1_000, description="One concise sentence summarizing the role.")
     tools: list[Tool] = Field(
         default_factory=list,
         description="Up to ten supported tools or technologies, sorted by importance.",
@@ -54,5 +63,6 @@ class JobAnalysis(BaseModel):
     )
     reason_not_job_description: Optional[str] = Field(
         default=None,
+        max_length=1_000,
         description="A short, clear reason when is_job_description is false.",
     )

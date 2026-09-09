@@ -17,6 +17,8 @@ const mockAnalysis = {
 };
 
 const API_BASE_URL = window.APP_CONFIG?.API_BASE_URL?.replace(/\/$/, "") || "http://127.0.0.1:8001";
+const MAX_CONTENT_LENGTH = 30_000;
+const REQUEST_TIMEOUT_MS = 90_000;
 const appShell = document.querySelector(".app-shell");
 const sidePanel = document.getElementById("sidePanel");
 const menuButton = document.getElementById("menuButton");
@@ -304,15 +306,35 @@ function togglePanel() {
 }
 
 async function requestAnalysis(content) {
-  const response = await fetch(`${API_BASE_URL}/api/analyze`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ content })
-  });
-  const data = await response.json().catch(() => ({}));
-  if (!response.ok) throw new Error(data.detail || "We could not analyze that description. Please try again.");
-  if (!data.is_job_description) throw new Error(data.reason_not_job_description || "This does not appear to be a job description.");
-  return data;
+  const controller = new AbortController();
+  const timeoutId = window.setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  try {
+    const response = await fetch(`${API_BASE_URL}/api/analyze`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ content }),
+      signal: controller.signal
+    });
+    const data = await response.json().catch(() => null);
+    if (!response.ok) {
+      const detail = data && typeof data === "object" && typeof data.detail === "string" ? data.detail : "";
+      throw new Error(detail || "We could not analyze that description. Please try again.");
+    }
+    if (!data || typeof data !== "object") {
+      throw new Error("The analysis service returned an invalid response. Please try again.");
+    }
+    if (!data.is_job_description) {
+      throw new Error(cleanText(data.reason_not_job_description) || "This does not appear to be a job description.");
+    }
+    return data;
+  } catch (error) {
+    if (error && error.name === "AbortError") {
+      throw new Error("The analysis is taking too long. Please try again or paste the job description text.");
+    }
+    throw error;
+  } finally {
+    window.clearTimeout(timeoutId);
+  }
 }
 
 menuButton.addEventListener("click", togglePanel);
@@ -337,13 +359,20 @@ analysisForm.addEventListener("submit", async (event) => {
     jobDescription.focus();
     return;
   }
+  if (content.length > MAX_CONTENT_LENGTH) {
+    formMessage.textContent = "Please limit the job description to 30,000 characters.";
+    jobDescription.focus();
+    return;
+  }
   formMessage.textContent = "";
   analyzeButton.disabled = true;
   analyzeButton.querySelector("span").textContent = "Analyzing…";
   try {
     showDashboard(await requestAnalysis(content), content);
   } catch (error) {
-    formMessage.textContent = error.message || "The service is unavailable. Please try again shortly.";
+    formMessage.textContent = error instanceof Error && error.message
+      ? error.message
+      : "The service is unavailable. Please try again shortly.";
   } finally {
     analyzeButton.disabled = false;
     analyzeButton.querySelector("span").textContent = "Analyze description";
