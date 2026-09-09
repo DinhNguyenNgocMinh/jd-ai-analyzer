@@ -1,3 +1,4 @@
+import logging
 import os
 
 from google import genai
@@ -5,6 +6,8 @@ from google.genai import types
 
 from models import JobAnalysis
 from web_content import UrlFetchError, fetch_job_description, looks_like_url
+
+logger = logging.getLogger(__name__)
 
 
 class AnalysisError(Exception):
@@ -94,6 +97,8 @@ def analyze_content(user_content: str) -> JobAnalysis:
         if response.text:
             return _clean_analysis(JobAnalysis.model_validate_json(response.text))
     except Exception as error:
+        # Keep user data and credentials out of logs while retaining the provider error for diagnosis.
+        logger.exception("Gemini analysis request failed (%s).", type(error).__name__)
         raise AnalysisError("We could not analyze that job description right now. Please try again shortly.") from error
 
     raise AnalysisError("The analysis service returned an unexpected result. Please try again.")
