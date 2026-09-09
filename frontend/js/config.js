@@ -1,5 +1,5 @@
-// This public value will point to the Render backend in the integration step.
-// It deliberately contains no secret keys.
+// This public value contains the Render backend URL, never an API key.
+// Replace the empty string before deploying the frontend to GitHub Pages.
 window.APP_CONFIG = {
   API_BASE_URL: ""
 };

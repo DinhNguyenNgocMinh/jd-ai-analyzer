@@ -1,7 +1,9 @@
 const mockAnalysis = {
-  jobTitle: "Data Engineer",
+  job_title: "Data Engineer",
   summary: "Build and maintain reliable data products that support business decisions.",
-  tags: ["Mid–Senior level", "Full-time", "Data platform"],
+  experience_level: "Mid–Senior level",
+  employment_type: "Full-time",
+  work_arrangement: "Data platform",
   tools: [
     { name: "SQL", importance: 90 },
     { name: "Python", importance: 84 },
@@ -10,21 +12,11 @@ const mockAnalysis = {
     { name: "Airflow", importance: 54 },
     { name: "Docker", importance: 42 }
   ],
-  concepts: [
-    "Data modeling",
-    "ETL / ELT",
-    "Data warehousing",
-    "Distributed systems",
-    "Data quality",
-    "Pipeline orchestration"
-  ],
-  details: [
-    { label: "Experience", value: "3+ years in data engineering or a related role" },
-    { label: "Primary focus", value: "Scalable data pipelines and trustworthy datasets" },
-    { label: "Collaboration", value: "Partner with analytics, product, and engineering teams" }
-  ]
+  concepts: ["Data modeling", "ETL / ELT", "Data warehousing", "Distributed systems", "Data quality", "Pipeline orchestration"],
+  key_responsibilities: ["Build scalable data pipelines", "Maintain trustworthy datasets", "Collaborate with analytics and product teams"]
 };
 
+const API_BASE_URL = window.APP_CONFIG?.API_BASE_URL?.replace(/\/$/, "") || "http://localhost:8001";
 const appShell = document.querySelector(".app-shell");
 const sidePanel = document.getElementById("sidePanel");
 const menuButton = document.getElementById("menuButton");
@@ -37,49 +29,65 @@ const inputView = document.getElementById("inputView");
 const dashboardView = document.getElementById("dashboardView");
 const newAnalysisButton = document.getElementById("newAnalysisButton");
 
-function renderAnalysis(analysis) {
-  document.getElementById("jobTitle").textContent = analysis.jobTitle;
-  document.getElementById("roleSummary").textContent = analysis.summary;
-
-  document.getElementById("roleMeta").innerHTML = analysis.tags
-    .map((tag) => `<span class="meta-pill">${tag}</span>`)
-    .join("");
-
-  document.getElementById("toolsList").innerHTML = analysis.tools
-    .map(
-      (tool) => `
-        <div class="tool-row">
-          <div class="tool-row__heading">
-            <span class="tool-name">${tool.name}</span>
-            <span class="tool-score">${tool.importance}%</span>
-          </div>
-          <div class="bar-track" role="progressbar" aria-label="${tool.name} relative importance" aria-valuemin="0" aria-valuemax="100" aria-valuenow="${tool.importance}">
-            <div class="bar-fill" style="width: ${tool.importance}%"></div>
-          </div>
-        </div>`
-    )
-    .join("");
-
-  document.getElementById("conceptList").innerHTML = analysis.concepts
-    .map((concept) => `<span class="concept-chip">${concept}</span>`)
-    .join("");
-
-  document.getElementById("detailsList").innerHTML = analysis.details
-    .map(
-      (detail) => `
-        <div class="detail-row">
-          <dt>${detail.label}</dt>
-          <dd>${detail.value}</dd>
-        </div>`
-    )
-    .join("");
+function element(tag, className, text) {
+  const node = document.createElement(tag);
+  if (className) node.className = className;
+  if (text !== undefined) node.textContent = text;
+  return node;
 }
 
-function showDashboard() {
-  renderAnalysis(mockAnalysis);
+function renderAnalysis(analysis) {
+  document.getElementById("jobTitle").textContent = analysis.job_title;
+  document.getElementById("roleSummary").textContent = analysis.summary;
+
+  const tags = [analysis.experience_level, analysis.employment_type, analysis.work_arrangement].filter(Boolean);
+  const roleMeta = document.getElementById("roleMeta");
+  roleMeta.replaceChildren(...tags.map((tag) => element("span", "meta-pill", tag)));
+
+  const toolsList = document.getElementById("toolsList");
+  toolsList.replaceChildren(
+    ...analysis.tools.map((tool) => {
+      const toolRow = element("div", "tool-row");
+      const heading = element("div", "tool-row__heading");
+      heading.append(element("span", "tool-name", tool.name), element("span", "tool-score", `${tool.importance}%`));
+
+      const track = element("div", "bar-track");
+      track.setAttribute("role", "progressbar");
+      track.setAttribute("aria-label", `${tool.name} relative importance`);
+      track.setAttribute("aria-valuemin", "0");
+      track.setAttribute("aria-valuemax", "100");
+      track.setAttribute("aria-valuenow", String(tool.importance));
+      const fill = element("div", "bar-fill");
+      fill.style.width = `${Math.max(0, Math.min(100, Number(tool.importance) || 0))}%`;
+      track.append(fill);
+      toolRow.append(heading, track);
+      return toolRow;
+    })
+  );
+
+  const conceptList = document.getElementById("conceptList");
+  conceptList.replaceChildren(...analysis.concepts.map((concept) => element("span", "concept-chip", concept)));
+
+  const details = [
+    analysis.experience_level && { label: "Experience", value: analysis.experience_level },
+    analysis.employment_type && { label: "Employment", value: analysis.employment_type },
+    analysis.work_arrangement && { label: "Work arrangement", value: analysis.work_arrangement },
+    analysis.key_responsibilities?.length && { label: "Key responsibilities", value: analysis.key_responsibilities.join(" · ") }
+  ].filter(Boolean);
+  const detailsList = document.getElementById("detailsList");
+  detailsList.replaceChildren(
+    ...(details.length ? details : [{ label: "Role details", value: "No additional details were confidently identified." }]).map((detail) => {
+      const row = element("div", "detail-row");
+      row.append(element("dt", "", detail.label), element("dd", "", detail.value));
+      return row;
+    })
+  );
+}
+
+function showDashboard(analysis) {
+  renderAnalysis(analysis);
   inputView.hidden = true;
   dashboardView.hidden = false;
-  dashboardView.querySelector("h1").focus?.();
   window.scrollTo({ top: 0, behavior: "smooth" });
 }
 
@@ -98,17 +106,28 @@ function togglePanel() {
   sidePanel.setAttribute("aria-hidden", String(isCollapsed));
 }
 
+async function requestAnalysis(content) {
+  const response = await fetch(`${API_BASE_URL}/api/analyze`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ content })
+  });
+  const data = await response.json().catch(() => ({}));
+  if (!response.ok) throw new Error(data.detail || "We could not analyze that description. Please try again.");
+  if (!data.is_job_description) throw new Error(data.reason_not_job_description || "This does not appear to be a job description.");
+  return data;
+}
+
 menuButton.addEventListener("click", togglePanel);
 homeLink.addEventListener("click", (event) => {
   event.preventDefault();
   showInput();
 });
 
-analysisForm.addEventListener("submit", (event) => {
+analysisForm.addEventListener("submit", async (event) => {
   event.preventDefault();
   const content = jobDescription.value.trim();
-
-  if (content.length < 20) {
+  if (content.length < 10) {
     formMessage.textContent = "Please paste a job description or a public job-description URL.";
     jobDescription.focus();
     return;
@@ -117,15 +136,15 @@ analysisForm.addEventListener("submit", (event) => {
   formMessage.textContent = "";
   analyzeButton.disabled = true;
   analyzeButton.querySelector("span").textContent = "Analyzing…";
-
-  // The next approved stage replaces this mock delay and result with the FastAPI request.
-  window.setTimeout(() => {
+  try {
+    showDashboard(await requestAnalysis(content));
+  } catch (error) {
+    formMessage.textContent = error.message || "The service is unavailable. Please try again shortly.";
+  } finally {
     analyzeButton.disabled = false;
     analyzeButton.querySelector("span").textContent = "Analyze description";
-    showDashboard();
-  }, 700);
+  }
 });
 
 newAnalysisButton.addEventListener("click", showInput);
-
 renderAnalysis(mockAnalysis);
